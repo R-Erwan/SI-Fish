@@ -1,116 +1,31 @@
-/****************************************************************************************/
-/*                     cube.cpp                    */
-/****************************************************************************************/
-/*         Affiche a l'ecran un cube en 3D         */
-/****************************************************************************************/
-
-/* inclusion des fichiers d'en-tete freeglut */
-
 #ifdef __APPLE__
 #include <GLUT/glut.h> /* Pour Mac OS X */
 #else
 #include <GL/glut.h>   /* Pour les autres systemes */
 #endif
 
+
 #include <cstdlib>
 #include <cstdio>
-#include <math.h>
 #include <jpeglib.h>
 #include <iostream>
 #include <vector>
+#include "PrimitiveSphere.h"
 
-class Point{
-public :
-    //coordonnées x, y et z du point
-    double x;
-    double y;
-    double z;
-
-    void print() const {
-        std::cout << "(" << x << ", " << y << ", " << z << ")\n";
-    }
-};
-
+// Keyboard and mouse interactions
 char presse;
 int anglex,angley,xold,yold;
 float zoomFactor = 1.0f; //Var pour suivre le niveau de zoom avec la molette
 
-std::vector<Point> vertices;
-std::vector<GLint> indices;
+//Primitive Objects
+PrimitiveSphere pSphereBody = PrimitiveSphere(1,30,30);
+
+//Images and Textures
 std::vector<unsigned char> imageSoleil; GLuint t_soleil;
 
-/* Prototype des fonctions */
-void affichage();
-void clavier(unsigned char touche,int x,int y);
-void reshape(int x,int y);
-void idle();
-void mouse(int bouton,int etat,int x,int y);
-void mousemotion(int x,int y);
-/* Prototype fonctions textures */
-void loadTextures();
-void loadJpegImage(const char *fichier, int width, int height, std::vector<unsigned char>& image);
-void calcSphere(float r, int nm, int np, std::vector<Point>& vertice, std::vector<GLint>& indice);
-void drawSphere(const std::vector<Point>& vertice, const std::vector<GLint>& indice,int nm, int np);
-
-int main(int argc,char **argv)
-{
-    /* initialisation de glut et creation
-       de la fenetre */
-    glutInit(&argc,argv);
-    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
-    glutInitWindowPosition(400,0);
-    glutInitWindowSize(750,750);
-    glutCreateWindow("Synthese d'Image");
-
-    /* Initialisation d'OpenGL */
-    glClearColor(0.9,0.9,0.9,1.0);
-    glColor3f(1.0,1.0,1.0);
-    glPointSize(6.0);
-    glEnable(GL_DEPTH_TEST);
-
-    /* enregistrement des fonctions de rappel */
-    glutDisplayFunc(affichage);
-    glutKeyboardFunc(clavier);
-    glutReshapeFunc(reshape);
-    glutMouseFunc(mouse);
-    glutIdleFunc(idle);
-    glutMotionFunc(mousemotion);
-
-    calcSphere(1,30,20,vertices,indices);
-
-//    loadTextures();
-
-    /* Entree dans la boucle principale glut */
-    glutMainLoop();
-    return 0;
-}
 /**
  * Dessine les axes x y et z dans la scène.
  */
-
-void calcSphere(float r, int nm, int np, std::vector<Point>& vertice, std::vector<GLint>& indice) {
-    // Génération des vertices
-    for (int i = 0; i < np; ++i) {
-        for (int j = 0; j < nm; ++j) {
-            float x = r * cos(j*((2.0*M_PI)/nm)) * cos(i*((M_PI)/(np-1)) - (M_PI / 2));
-            float y = r * sin(j*((2.0*M_PI)/nm)) * cos(i*((M_PI)/(np-1)) - (M_PI / 2));
-            float z = r * sin(i*(M_PI)/(np-1) - (M_PI / 2));
-            Point p = {x,y,z};
-            vertice.push_back(p);
-        }
-    }
-
-    for (int i = 0; i < np-1; ++i) {
-        for (int j = 0; j < nm; ++j) {
-            indice.push_back(j+(i*nm));
-            indice.push_back((j+1)%nm + (i*nm));
-            indice.push_back(((j+1)%nm)+nm+(i*nm));
-            indice.push_back(j + nm +(i*nm));
-        }
-    }
-
-}
-
 void drawAxes(){
     glPushMatrix();
     // Dessin des axes
@@ -136,48 +51,6 @@ void drawAxes(){
     glEnd();
     glPopMatrix();
 }
-
-void drawSphere(const std::vector<Point>& vertice, const std::vector<GLint>& indice,int nm, int np) {
-    glBegin(GL_QUADS); // Utilisation de GL_QUADS pour dessiner des quadrilatères
-    int idx = 0;
-    float u, v;
-    for (int j = 0; j <np-1; ++j) {
-        for (int i = 0; i < nm-1; ++i) {
-            for (int k = 0; k < 4; ++k) {
-                u = static_cast<float>(indice[idx] % nm) / nm; // Coordonnée U
-                v = static_cast<float>(indice[idx] / nm) / (np-1); // Coordonnée V
-                glTexCoord2f(u,v);
-                glVertex3f(vertice[indice[idx]].x, vertice[indice[idx]].y, vertice[indice[idx]].z);
-                idx++;
-            }
-        }
-        u = static_cast<float>(indice[idx] % nm) / nm; // Coordonnée U
-        v = static_cast<float>(indice[idx] / nm) / (np-1); // Coordonnée V
-        glTexCoord2f(u,v);
-        glVertex3f(vertice[indice[idx]].x, vertice[indice[idx]].y, vertice[indice[idx]].z);
-        idx++;
-
-        u = 1;
-        v = j / (np-1);
-        glTexCoord2f(u,v);
-        glVertex3f(vertice[indice[idx]].x, vertice[indice[idx]].y, vertice[indice[idx]].z);
-        idx++;
-
-        u = 1;
-        v = (j+1) / (np-1);
-        glTexCoord2f(u,v);
-        glVertex3f(vertice[indice[idx]].x, vertice[indice[idx]].y, vertice[indice[idx]].z);
-        idx++;
-
-        u = static_cast<float>(indice[idx] % nm) / nm; // Coordonnée U
-        v = static_cast<float>(indice[idx] / nm) / (np-1); // Coordonnée V
-        glTexCoord2f(u,v);
-        glVertex3f(vertice[indice[idx]].x, vertice[indice[idx]].y, vertice[indice[idx]].z);
-        idx++;
-    }
-    glEnd();
-}
-
 /**
  * Fonction principal, qui dessine toutes les figures.
  */
@@ -197,15 +70,16 @@ void affichage()
 
     drawAxes();
 
-//    glEnable(GL_TEXTURE_2D);
-//    glBindTexture(GL_TEXTURE_2D,t_soleil);
-    drawSphere(vertices,indices,30,20);
-//    glDisable(GL_TEXTURE_2D);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D,t_soleil);
+    pSphereBody.draw();
+    glDisable(GL_TEXTURE_2D);
 
     glFlush();
     glutSwapBuffers();
 }
 
+//Textures Loaders
 /**
  * Charge une image dans un tableau
  * @param fichier fichier ou chercher l'image
@@ -262,7 +136,7 @@ void loadJpegImage(const char *fichier, int width, int height, std::vector<unsig
     fclose(file); // Fermer le fichier
 }
 void loadTextures(){
-    loadJpegImage("../calimero.jpg",256,256,imageSoleil);
+    loadJpegImage("../soleil.jpg",128,128,imageSoleil);
     glGenTextures(1,&t_soleil);
     glBindTexture(GL_TEXTURE_2D,t_soleil);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -270,9 +144,10 @@ void loadTextures(){
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 256, 256, 0, GL_RGB, GL_UNSIGNED_BYTE, imageSoleil.data());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 128, 128, 0, GL_RGB, GL_UNSIGNED_BYTE, imageSoleil.data());
 }
 
+//Other Functions
 void clavier(unsigned char touche,int x,int y)
 {
     switch (touche)
@@ -371,7 +246,38 @@ void mousemotion(int x,int y)
     xold=x; /* sauvegarde des valeurs courante de le position de la souris */
     yold=y;
 }
-
 void idle(){
     glutPostRedisplay();
+}
+
+//Main function
+int main(int argc,char **argv)
+{
+    /* initialisation de glut et creation
+       de la fenetre */
+    glutInit(&argc,argv);
+    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
+    glutInitWindowPosition(400,0);
+    glutInitWindowSize(750,750);
+    glutCreateWindow("Synthese d'Image");
+
+    /* Initialisation d'OpenGL */
+    glClearColor(0.9,0.9,0.9,1.0);
+    glColor3f(1.0,1.0,1.0);
+    glPointSize(6.0);
+    glEnable(GL_DEPTH_TEST);
+
+    /* enregistrement des fonctions de rappel */
+    glutDisplayFunc(affichage);
+    glutKeyboardFunc(clavier);
+    glutReshapeFunc(reshape);
+    glutMouseFunc(mouse);
+    glutIdleFunc(idle);
+    glutMotionFunc(mousemotion);
+
+//    loadTextures();
+
+    /* Entree dans la boucle principale glut */
+    glutMainLoop();
+    return 0;
 }

@@ -10,6 +10,8 @@ find_package(GLU REQUIRED)
 find_package(JPEG REQUIRED)
 
 add_executable(CubeGL cube.cpp
+        PrimitiveSphere.cpp
+        PrimitiveSphere.h
 )
 
 include_directories(${JPEG_INCLUDE_DIRS})
