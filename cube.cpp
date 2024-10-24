@@ -32,6 +32,9 @@ PrimitiveTorus eyelidRight = PrimitiveTorus(1,0.1,32,32);
 
 PrimitiveCylindre topFin = PrimitiveCylindre(0.5,32,0.1);
 
+
+//TODO Classe pour faire des pyramides
+
 //Images and Textures
 std::vector<unsigned char> imageSoleil; GLuint t_soleil;
 
@@ -134,6 +137,102 @@ void drawTopFin(){
         topFin.draw();
     glPopMatrix();
 }
+#include <GL/glut.h>
+
+#include <GL/glut.h>
+
+void drawBackFin() {
+    const int num_points = 20; // Nombre de points pour la courbure
+    GLfloat baseWidth = 1.0f;  // Largeur de la base
+    GLfloat topWidth = 0.4f;   // Largeur du sommet
+    GLfloat height = 1.0f;     // Hauteur totale de la nageoire
+    GLfloat depth = 0.2f;      // Profondeur 3D de la nageoire (épaisseur)
+    GLfloat curvature = 0.2f;  // Facteur de courbure (ajuster pour plus ou moins de courbure)
+
+    // Points de la base avant
+    GLfloat baseVerticesFront[num_points][3];
+    // Points de la base arrière (décalé par la profondeur)
+    GLfloat baseVerticesBack[num_points][3];
+    // Points du sommet avant
+    GLfloat topVerticesFront[num_points][3];
+    // Points du sommet arrière
+    GLfloat topVerticesBack[num_points][3];
+
+    // Générer les points pour la base avant (face avant)
+    for (int i = 0; i < num_points; ++i) {
+        float t = (float)i / (float)(num_points - 1);           // Paramètre t variant de 0 à 1
+        baseVerticesFront[i][0] = (1.0f - t) * (-baseWidth / 2) + t * (baseWidth / 2); // Coordonnée x (de gauche à droite)
+        baseVerticesFront[i][1] = curvature * (t * t - t);      // Courbure appliquée sur la coordonnée y
+        baseVerticesFront[i][2] = 0.0f;                         // Coordonnée z de la face avant (0 pour l'avant)
+    }
+
+    // Générer les points pour le sommet avant (face avant plus étroite)
+    for (int i = 0; i < num_points; ++i) {
+        float t = (float)i / (float)(num_points - 1);           // Paramètre t variant de 0 à 1
+        topVerticesFront[i][0] = (1.0f - t) * (-topWidth / 2) + t * (topWidth / 2); // Coordonnée x pour le sommet (plus petit)
+        topVerticesFront[i][1] = height + curvature * (t * t - t);   // Ajustement de y pour le sommet avec courbure et hauteur
+        topVerticesFront[i][2] = 0.0f;                          // Coordonnée z du sommet (0 pour l'avant)
+    }
+
+    // Générer les points pour la base arrière (face arrière)
+    for (int i = 0; i < num_points; ++i) {
+        baseVerticesBack[i][0] = baseVerticesFront[i][0];        // Même x que la base avant
+        baseVerticesBack[i][1] = baseVerticesFront[i][1];        // Même courbure y que la base avant
+        baseVerticesBack[i][2] = depth;                         // Coordonnée z décalée par la profondeur
+    }
+
+    // Générer les points pour le sommet arrière (face arrière)
+    for (int i = 0; i < num_points; ++i) {
+        topVerticesBack[i][0] = topVerticesFront[i][0];         // Même x que le sommet avant
+        topVerticesBack[i][1] = topVerticesFront[i][1];         // Même courbure y que le sommet avant
+        topVerticesBack[i][2] = depth;                          // Coordonnée z décalée par la profondeur
+    }
+
+    // Dessiner les faces latérales entre la base et le sommet (GL_QUAD_STRIP)
+    glBegin(GL_QUAD_STRIP);
+    for (int i = 0; i < num_points; ++i) {
+        // Points du bord supérieur (sommet avant et arrière)
+        glVertex3f(topVerticesFront[i][0], topVerticesFront[i][1], topVerticesFront[i][2]);
+        glVertex3f(topVerticesBack[i][0], topVerticesBack[i][1], topVerticesBack[i][2]);
+        // Points du bord inférieur (base avant et arrière)
+        glVertex3f(baseVerticesFront[i][0], baseVerticesFront[i][1], baseVerticesFront[i][2]);
+        glVertex3f(baseVerticesBack[i][0], baseVerticesBack[i][1], baseVerticesBack[i][2]);
+    }
+    glEnd();
+
+    // Dessiner la face avant (base avant connectée au sommet avant)
+    glBegin(GL_QUAD_STRIP);
+    for (int i = 0; i < num_points; ++i) {
+        glVertex3f(baseVerticesFront[i][0], baseVerticesFront[i][1], baseVerticesFront[i][2]);
+        glVertex3f(topVerticesFront[i][0], topVerticesFront[i][1], topVerticesFront[i][2]);
+    }
+    glEnd();
+
+    // Dessiner la face arrière (base arrière connectée au sommet arrière)
+    glBegin(GL_QUAD_STRIP);
+    for (int i = 0; i < num_points; ++i) {
+        glVertex3f(baseVerticesBack[i][0], baseVerticesBack[i][1], baseVerticesBack[i][2]);
+        glVertex3f(topVerticesBack[i][0], topVerticesBack[i][1], topVerticesBack[i][2]);
+    }
+    glEnd();
+
+    // Dessiner les bases pour fermer les deux côtés
+    glBegin(GL_QUADS);
+    // Base inférieure (devant et derrière)
+    glVertex3f(baseVerticesFront[0][0], baseVerticesFront[0][1], baseVerticesFront[0][2]);
+    glVertex3f(baseVerticesFront[num_points - 1][0], baseVerticesFront[num_points - 1][1], baseVerticesFront[num_points - 1][2]);
+    glVertex3f(baseVerticesBack[num_points - 1][0], baseVerticesBack[num_points - 1][1], baseVerticesBack[num_points - 1][2]);
+    glVertex3f(baseVerticesBack[0][0], baseVerticesBack[0][1], baseVerticesBack[0][2]);
+
+    // Base supérieure (devant et derrière)
+    glVertex3f(topVerticesFront[0][0], topVerticesFront[0][1], topVerticesFront[0][2]);
+    glVertex3f(topVerticesFront[num_points - 1][0], topVerticesFront[num_points - 1][1], topVerticesFront[num_points - 1][2]);
+    glVertex3f(topVerticesBack[num_points - 1][0], topVerticesBack[num_points - 1][1], topVerticesBack[num_points - 1][2]);
+    glVertex3f(topVerticesBack[0][0], topVerticesBack[0][1], topVerticesBack[0][2]);
+    glEnd();
+}
+
+
 
 
 /**
@@ -186,7 +285,7 @@ void affichage()
     drawBody();
     drawEyes();
     drawTopFin();
-
+//drawBackFin();
 
     glFlush();
     glutSwapBuffers();

@@ -73,6 +73,9 @@ void PrimitiveCylindre::draw() {
     glEnd();
 }
 
+//TODO function drawWithTexturePerFace
+//TODO function drawWithTextureRound
+
 float PrimitiveCylindre::getRadius() {
     return radius;
 }

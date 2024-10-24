@@ -71,6 +71,9 @@ void PrimitiveSphere::draw() {
     glEnd();
 }
 
+//TODO function drawWithTextureArround
+//TODO function drawWithTexturePlaced
+
 // Retourne le nombre de méridiens
 int PrimitiveSphere::getMeridians() const {
     return meridians;
