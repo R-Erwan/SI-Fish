@@ -10,7 +10,10 @@
 #include <jpeglib.h>
 #include <iostream>
 #include <vector>
+#include <cmath>
 #include "PrimitiveSphere.h"
+#include "PrimitiveTorus.h"
+#include "PrimitiveCylindre.h"
 
 // Keyboard and mouse interactions
 char presse;
@@ -18,10 +21,120 @@ int anglex,angley,xold,yold;
 float zoomFactor = 1.0f; //Var pour suivre le niveau de zoom avec la molette
 
 //Primitive Objects
-PrimitiveSphere pSphereBody = PrimitiveSphere(1,30,30);
+PrimitiveSphere pSphereBody = PrimitiveSphere(1,32,32);
+PrimitiveSphere eyeLeft = PrimitiveSphere(1,32,32);
+PrimitiveSphere eyeRight = PrimitiveSphere(1,32,32);
+PrimitiveSphere pupilLeft = PrimitiveSphere(1,32,32);
+PrimitiveSphere pupilRight = PrimitiveSphere(1,32,32);
+
+PrimitiveTorus eyelidLeft = PrimitiveTorus(1,0.1,32,32);
+PrimitiveTorus eyelidRight = PrimitiveTorus(1,0.1,32,32);
+
+PrimitiveCylindre topFin = PrimitiveCylindre(0.5,32,0.1);
 
 //Images and Textures
 std::vector<unsigned char> imageSoleil; GLuint t_soleil;
+
+void drawBody() {
+    float SCALE_X_FACTOR = 1.15;
+    GLdouble planEquation[] = {-0.9, 0.0, 0.0, SCALE_X_FACTOR * 0.86}; // EQ: −0.9x+0.0y+0.0z+0.99=0 Le vecteur normal est perpendiculaire a x
+
+    // Active le clipping
+    glEnable(GL_CLIP_PLANE0);
+    glClipPlane(GL_CLIP_PLANE0, planEquation);
+
+        glPushMatrix();
+            // Dessine l'extérieur de la sphère (orange)
+            glEnable(GL_CULL_FACE);          // Active le culling des faces
+                glCullFace(GL_FRONT);             // Cache les faces arrières (intérieures)
+                glColor3f(0.91f, 0.63f, 0.11f);  // Couleur orange pour l'extérieur
+                    glEnable(GL_TEXTURE_2D);
+                    glBindTexture(GL_TEXTURE_2D, t_soleil);
+                    glScalef(SCALE_X_FACTOR, 1.05f, 1.0f);
+                    pSphereBody.draw();
+                glDisable(GL_TEXTURE_2D);
+
+                // Dessine l'intérieur de la sphère (noir)
+                glCullFace(GL_BACK);            // Cache les faces avant (extérieures)
+                glColor3f(0.0f, 0.0f, 0.0f);     // Couleur noire pour l'intérieur
+                pSphereBody.draw();              // Redessine la sphère
+            // Désactive les options activées
+            glDisable(GL_CULL_FACE);
+        glPopMatrix();
+
+    glDisable(GL_CLIP_PLANE0);
+}
+void drawEyes(){
+    float bodyRadius = pSphereBody.getRadius(); // Rayon du corps principal
+    float radius = 0.4f * bodyRadius; // Rayon des yeux
+    float distance = bodyRadius *0.8f; // Distance des yeux par rapport au rayon, du corps
+    float pupilRadius = 0.6f * radius;
+    float pupilOffset = 0.8f * radius;
+
+    //Œil gauche
+    glPushMatrix();
+
+        glTranslatef(distance * cos(M_PI/4), // longitude (position horizontal)
+                     distance * sin(M_PI/6), // latitude (position hauteur)
+                     distance * sin(M_PI/4)); // profondeur
+        glColor3f(0.82,0.77,0.69);
+        glScalef(radius,radius,radius);
+        eyeLeft.draw();
+
+        //Paupière gauche
+        glPushMatrix();
+            glColor3f(0.58,0.34,0.31);
+            glTranslatef(0.4f*radius,0.4f*radius,0.4f*radius);
+            glRotatef(135, 1, -1, 0);
+            eyelidLeft.draw();
+        glPopMatrix();
+
+        //Pupille gauche
+        glPushMatrix();
+            glColor3f(0.1,0.1,0.1);
+            glTranslatef(pupilOffset,pupilOffset,pupilOffset);
+            glScalef(pupilRadius/radius, pupilRadius/radius, pupilRadius/radius);
+            pupilLeft.draw();
+        glPopMatrix();
+
+
+    glPopMatrix();
+
+    //Œil droit
+    glPushMatrix();
+        glTranslatef(distance * cos(-M_PI/4), // longitude
+                     distance * sin(M_PI/6), // latitude
+                     distance * sin(-M_PI/4));
+        glColor3f(0.82,0.77,0.69);
+        glScalef(radius,radius,radius);
+        eyeRight.draw();
+
+        //Paupière droite
+        glPushMatrix();
+            glColor3f(0.58,0.34,0.31);
+            glTranslatef(0.4f*radius,0.4f*radius,-0.4f*radius);
+            glRotatef(135, -1, 1, 0);
+            eyelidRight.draw();
+        glPopMatrix();
+
+        //Pupille droite
+        glPushMatrix();
+            glColor3f(0.1,0.1,0.1);
+            glTranslatef(pupilOffset,pupilOffset,pupilOffset/2);
+            glScalef(pupilRadius/radius,pupilRadius/radius,pupilRadius/radius);
+            pupilRight.draw();
+        glPopMatrix();
+    glPopMatrix();
+}
+void drawTopFin(){
+    glPushMatrix();
+        glColor3f(0.84f, 0.55f, 0.02f);
+        glTranslatef(0.0,pSphereBody.getRadius(),0.0);
+        glRotatef(90,1.0,0.0,0.0);
+        topFin.draw();
+    glPopMatrix();
+}
+
 
 /**
  * Dessine les axes x y et z dans la scène.
@@ -70,10 +183,10 @@ void affichage()
 
     drawAxes();
 
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D,t_soleil);
-    pSphereBody.draw();
-    glDisable(GL_TEXTURE_2D);
+    drawBody();
+    drawEyes();
+    drawTopFin();
+
 
     glFlush();
     glutSwapBuffers();

@@ -7,10 +7,7 @@
 
 #include <vector>
 #include <GL/glut.h>
-
-struct Point {
-    float x, y, z;
-};
+#include "Point.h"
 
 class PrimitiveSphere {
 private:
@@ -24,8 +21,11 @@ private:
 
 public:
     PrimitiveSphere(float r, int m, int p);  // Constructeur
+    void draw();
 
-    void draw();  // Méthode pour dessiner la sphère
+    int getMeridians() const;
+    int getParallels() const;
+    float getRadius() const;// Méthode pour dessiner la sphère
 };
 
 

@@ -12,6 +12,12 @@ find_package(JPEG REQUIRED)
 add_executable(CubeGL cube.cpp
         PrimitiveSphere.cpp
         PrimitiveSphere.h
+        PrimitiveTorus.cpp
+        PrimitiveTorus.h
+        Point.cpp
+        Point.h
+        PrimitiveCylindre.cpp
+        PrimitiveCylindre.h
 )
 
 include_directories(${JPEG_INCLUDE_DIRS})

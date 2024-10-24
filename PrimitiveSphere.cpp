@@ -1,6 +1,5 @@
 #include "PrimitiveSphere.h"  // Inclusion du header correspondant
 #include <cmath>      // Pour les calculs mathématiques comme sin et cos
-#include <cstdio>
 
 PrimitiveSphere::PrimitiveSphere(float r, int m, int p) :radius(r), meridians(m),parallels(p) {
     calcSphere();  // Calcul des coordonnées des sommets à l'initialisation
@@ -71,3 +70,18 @@ void PrimitiveSphere::draw() {
     }
     glEnd();
 }
+
+// Retourne le nombre de méridiens
+int PrimitiveSphere::getMeridians() const {
+    return meridians;
+}
+
+// Retourne le nombre de parallèles
+int PrimitiveSphere::getParallels() const {
+    return parallels;
+}
+
+float PrimitiveSphere::getRadius() const {
+    return radius;
+}
+
