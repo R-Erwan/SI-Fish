@@ -24,11 +24,11 @@ private:
 public:
     PrimitiveCylindre(float r, int p, float h);
     void draw();
+    void drawWithTextureOnDisque(GLuint textureId);
 
     float getRadius();
     int getStep();
     int getHeight();
-
 };
 
 

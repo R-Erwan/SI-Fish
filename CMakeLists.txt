@@ -18,6 +18,8 @@ add_executable(CubeGL cube.cpp
         Point.h
         PrimitiveCylindre.cpp
         PrimitiveCylindre.h
+        PrimitiveTrunquedPyramid.cpp
+        PrimitiveTrunquedPyramid.h
 )
 
 include_directories(${JPEG_INCLUDE_DIRS})

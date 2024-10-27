@@ -73,6 +73,49 @@ void PrimitiveCylindre::draw() {
     glEnd();
 }
 
+void PrimitiveCylindre::drawWithTextureOnDisque(GLuint textureId) {
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, textureId);
+
+    // Disque supérieur avec texture
+    glBegin(GL_POLYGON);
+    for (int i = 0; i < step; ++i) {
+        Point p = vertices[indices[i]];
+
+        // Calcul de la coordonnée de texture (u, v) en fonction de l'angle
+        float u = 0.5f + 0.5f * cos((i * 2 * M_PI) / step); // u varie entre 0 et 1
+        float v = 0.5f + 0.5f * sin((i * 2 * M_PI) / step); // v varie entre 0 et 1
+
+        glTexCoord2f(u, v);
+        glVertex3f(p.x, p.y, p.z);
+    }
+    glEnd();
+
+    // Disque inférieur avec texture
+    glBegin(GL_POLYGON);
+    for (int i = 0; i < step; ++i) {
+        Point p = vertices[indices[i + step]];
+
+        // Même calcul pour le disque inférieur
+        float u = 0.5f + 0.5f * cos((i * 2 * M_PI) / step);
+        float v = 0.5f + 0.5f * sin((i * 2 * M_PI) / step);
+
+        glTexCoord2f(u, v);
+        glVertex3f(p.x, p.y, p.z);
+    }
+    glEnd();
+
+    glDisable(GL_TEXTURE_2D);
+
+    // Faces latérales
+    glBegin(GL_QUADS);
+    for (int i : indiceslat) {
+        Point p = vertices[i];  // Utilisation correcte d'indiceslat
+        glVertex3f(p.x, p.y, p.z);
+    }
+    glEnd();
+}
+
 //TODO function drawWithTexturePerFace
 //TODO function drawWithTextureRound
 

@@ -71,6 +71,7 @@ void PrimitiveSphere::draw() {
     glEnd();
 }
 
+
 //TODO function drawWithTextureArround
 //TODO function drawWithTexturePlaced
 

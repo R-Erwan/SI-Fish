@@ -14,6 +14,12 @@
 #include "PrimitiveSphere.h"
 #include "PrimitiveTorus.h"
 #include "PrimitiveCylindre.h"
+#include "PrimitiveTrunquedPyramid.h"
+#define RESOLUTION 2
+
+struct Color {
+    float r, g, b;
+};
 
 // Keyboard and mouse interactions
 char presse;
@@ -21,22 +27,29 @@ int anglex,angley,xold,yold;
 float zoomFactor = 1.0f; //Var pour suivre le niveau de zoom avec la molette
 
 //Primitive Objects
-PrimitiveSphere pSphereBody = PrimitiveSphere(1,32,32);
-PrimitiveSphere eyeLeft = PrimitiveSphere(1,32,32);
-PrimitiveSphere eyeRight = PrimitiveSphere(1,32,32);
-PrimitiveSphere pupilLeft = PrimitiveSphere(1,32,32);
-PrimitiveSphere pupilRight = PrimitiveSphere(1,32,32);
+PrimitiveSphere pSphereBody = PrimitiveSphere(1,32*RESOLUTION,32*RESOLUTION);
+PrimitiveCylindre mouthHiden = PrimitiveCylindre(0.4,32*RESOLUTION,0.05);
 
-PrimitiveTorus eyelidLeft = PrimitiveTorus(1,0.1,32,32);
-PrimitiveTorus eyelidRight = PrimitiveTorus(1,0.1,32,32);
+PrimitiveSphere eyeLeft = PrimitiveSphere(1,16*RESOLUTION,16*RESOLUTION);
+PrimitiveSphere eyeRight = PrimitiveSphere(1,16*RESOLUTION,16*RESOLUTION);
+PrimitiveSphere pupilLeft = PrimitiveSphere(1,16*RESOLUTION,16*RESOLUTION);
+PrimitiveSphere pupilRight = PrimitiveSphere(1,16*RESOLUTION,16*RESOLUTION);
 
-PrimitiveCylindre topFin = PrimitiveCylindre(0.5,32,0.1);
+PrimitiveTorus eyelidLeft = PrimitiveTorus(1,0.1,16*RESOLUTION,16*RESOLUTION);
+PrimitiveTorus eyelidRight = PrimitiveTorus(1,0.1,16*RESOLUTION,16*RESOLUTION);
 
+PrimitiveCylindre topFin = PrimitiveCylindre(0.5,16*RESOLUTION,0.1);
 
-//TODO Classe pour faire des pyramides
+PrimitiveTrunquedPyramid backFin = PrimitiveTrunquedPyramid(1,0.1,0.5,0.33,0);
+PrimitiveTrunquedPyramid lateralLeftFin = PrimitiveTrunquedPyramid(0.75,0.1,0.4,0.33,0);
+PrimitiveTrunquedPyramid lateralRighttFin = PrimitiveTrunquedPyramid(0.75,0.1,0.4,0.33,0);
+
+//Couleur
+Color c_bleue = {0.29, 0.57, 0.59};
 
 //Images and Textures
-std::vector<unsigned char> imageSoleil; GLuint t_soleil;
+std::vector<unsigned char> texSkin; GLuint t_skin;
+std::vector<unsigned char> texFin; GLuint t_fin;
 
 void drawBody() {
     float SCALE_X_FACTOR = 1.15;
@@ -51,11 +64,13 @@ void drawBody() {
             glEnable(GL_CULL_FACE);          // Active le culling des faces
                 glCullFace(GL_FRONT);             // Cache les faces arrières (intérieures)
                 glColor3f(0.91f, 0.63f, 0.11f);  // Couleur orange pour l'extérieur
-                    glEnable(GL_TEXTURE_2D);
-                    glBindTexture(GL_TEXTURE_2D, t_soleil);
+
                     glScalef(SCALE_X_FACTOR, 1.05f, 1.0f);
+
+                    glEnable(GL_TEXTURE_2D);
+                    glBindTexture(GL_TEXTURE_2D, t_skin);
                     pSphereBody.draw();
-                glDisable(GL_TEXTURE_2D);
+                    glDisable(GL_TEXTURE_2D);
 
                 // Dessine l'intérieur de la sphère (noir)
                 glCullFace(GL_BACK);            // Cache les faces avant (extérieures)
@@ -66,6 +81,13 @@ void drawBody() {
         glPopMatrix();
 
     glDisable(GL_CLIP_PLANE0);
+
+    glPushMatrix();
+        glColor3f(0.0f,0.0f,0.0f);
+        glTranslatef(1.0,0.0,0.0);
+        glRotatef(90,0.0,0.0,1.0);
+        mouthHiden.draw();
+    glPopMatrix();
 }
 void drawEyes(){
     float bodyRadius = pSphereBody.getRadius(); // Rayon du corps principal
@@ -97,7 +119,7 @@ void drawEyes(){
             glColor3f(0.1,0.1,0.1);
             glTranslatef(pupilOffset,pupilOffset,pupilOffset);
             glScalef(pupilRadius/radius, pupilRadius/radius, pupilRadius/radius);
-            pupilLeft.draw();
+                pupilLeft.draw();
         glPopMatrix();
 
 
@@ -131,113 +153,51 @@ void drawEyes(){
 }
 void drawTopFin(){
     glPushMatrix();
-        glColor3f(0.84f, 0.55f, 0.02f);
+        glColor3f(c_bleue.r, c_bleue.g, c_bleue.b);
         glTranslatef(0.0,pSphereBody.getRadius(),0.0);
         glRotatef(90,1.0,0.0,0.0);
-        topFin.draw();
+            topFin.drawWithTextureOnDisque(t_fin);
     glPopMatrix();
 }
-#include <GL/glut.h>
+void drawBackFin(){
+    glPushMatrix();
+    glColor3f(c_bleue.r, c_bleue.g, c_bleue.b);
+    glTranslatef(-pSphereBody.getRadius()-backFin.getHeight(),0.0,0.0); // Translation pour placer la nageoire à l'arrière du poisson
+    glRotatef(-90,0.0,0.0,1.0); // Rotation pour orienter la forme.
+        backFin.drawWithTexOnLatFace(t_fin);
+    glPopMatrix();
+}
+void drawLateralFin(){
+    glPushMatrix();
+    glColor3f(c_bleue.r, c_bleue.g, c_bleue.b);
 
-#include <GL/glut.h>
+        //Right Fin
+        glPushMatrix();
+            glTranslatef(0.0,0.0,pSphereBody.getRadius() + lateralLeftFin.getHeight()*0.8f);
+            glRotatef(-90,0.0,0.0,1.0); // Rotation pour orienter la forme.
+            glRotatef(-90,1.0,0.0,0.0);
+            lateralRighttFin.drawWithTexOnLatFace(t_fin);
+        glPopMatrix();
 
-void drawBackFin() {
-    const int num_points = 20; // Nombre de points pour la courbure
-    GLfloat baseWidth = 1.0f;  // Largeur de la base
-    GLfloat topWidth = 0.4f;   // Largeur du sommet
-    GLfloat height = 1.0f;     // Hauteur totale de la nageoire
-    GLfloat depth = 0.2f;      // Profondeur 3D de la nageoire (épaisseur)
-    GLfloat curvature = 0.2f;  // Facteur de courbure (ajuster pour plus ou moins de courbure)
+        //Left Fin
+        glPushMatrix();
+            glTranslatef(0.0,0.0,-pSphereBody.getRadius() - lateralLeftFin.getHeight()*0.8f);
+            glRotatef(-90,0.0,0.0,1.0); // Rotation pour orienter la forme.
+            glRotatef(90,1.0,0.0,0.0); // Rotation pour orienter la forme.
+            lateralLeftFin.drawWithTexOnLatFace(t_fin);
+        glPopMatrix();
 
-    // Points de la base avant
-    GLfloat baseVerticesFront[num_points][3];
-    // Points de la base arrière (décalé par la profondeur)
-    GLfloat baseVerticesBack[num_points][3];
-    // Points du sommet avant
-    GLfloat topVerticesFront[num_points][3];
-    // Points du sommet arrière
-    GLfloat topVerticesBack[num_points][3];
+    glPopMatrix();
 
-    // Générer les points pour la base avant (face avant)
-    for (int i = 0; i < num_points; ++i) {
-        float t = (float)i / (float)(num_points - 1);           // Paramètre t variant de 0 à 1
-        baseVerticesFront[i][0] = (1.0f - t) * (-baseWidth / 2) + t * (baseWidth / 2); // Coordonnée x (de gauche à droite)
-        baseVerticesFront[i][1] = curvature * (t * t - t);      // Courbure appliquée sur la coordonnée y
-        baseVerticesFront[i][2] = 0.0f;                         // Coordonnée z de la face avant (0 pour l'avant)
-    }
-
-    // Générer les points pour le sommet avant (face avant plus étroite)
-    for (int i = 0; i < num_points; ++i) {
-        float t = (float)i / (float)(num_points - 1);           // Paramètre t variant de 0 à 1
-        topVerticesFront[i][0] = (1.0f - t) * (-topWidth / 2) + t * (topWidth / 2); // Coordonnée x pour le sommet (plus petit)
-        topVerticesFront[i][1] = height + curvature * (t * t - t);   // Ajustement de y pour le sommet avec courbure et hauteur
-        topVerticesFront[i][2] = 0.0f;                          // Coordonnée z du sommet (0 pour l'avant)
-    }
-
-    // Générer les points pour la base arrière (face arrière)
-    for (int i = 0; i < num_points; ++i) {
-        baseVerticesBack[i][0] = baseVerticesFront[i][0];        // Même x que la base avant
-        baseVerticesBack[i][1] = baseVerticesFront[i][1];        // Même courbure y que la base avant
-        baseVerticesBack[i][2] = depth;                         // Coordonnée z décalée par la profondeur
-    }
-
-    // Générer les points pour le sommet arrière (face arrière)
-    for (int i = 0; i < num_points; ++i) {
-        topVerticesBack[i][0] = topVerticesFront[i][0];         // Même x que le sommet avant
-        topVerticesBack[i][1] = topVerticesFront[i][1];         // Même courbure y que le sommet avant
-        topVerticesBack[i][2] = depth;                          // Coordonnée z décalée par la profondeur
-    }
-
-    // Dessiner les faces latérales entre la base et le sommet (GL_QUAD_STRIP)
-    glBegin(GL_QUAD_STRIP);
-    for (int i = 0; i < num_points; ++i) {
-        // Points du bord supérieur (sommet avant et arrière)
-        glVertex3f(topVerticesFront[i][0], topVerticesFront[i][1], topVerticesFront[i][2]);
-        glVertex3f(topVerticesBack[i][0], topVerticesBack[i][1], topVerticesBack[i][2]);
-        // Points du bord inférieur (base avant et arrière)
-        glVertex3f(baseVerticesFront[i][0], baseVerticesFront[i][1], baseVerticesFront[i][2]);
-        glVertex3f(baseVerticesBack[i][0], baseVerticesBack[i][1], baseVerticesBack[i][2]);
-    }
-    glEnd();
-
-    // Dessiner la face avant (base avant connectée au sommet avant)
-    glBegin(GL_QUAD_STRIP);
-    for (int i = 0; i < num_points; ++i) {
-        glVertex3f(baseVerticesFront[i][0], baseVerticesFront[i][1], baseVerticesFront[i][2]);
-        glVertex3f(topVerticesFront[i][0], topVerticesFront[i][1], topVerticesFront[i][2]);
-    }
-    glEnd();
-
-    // Dessiner la face arrière (base arrière connectée au sommet arrière)
-    glBegin(GL_QUAD_STRIP);
-    for (int i = 0; i < num_points; ++i) {
-        glVertex3f(baseVerticesBack[i][0], baseVerticesBack[i][1], baseVerticesBack[i][2]);
-        glVertex3f(topVerticesBack[i][0], topVerticesBack[i][1], topVerticesBack[i][2]);
-    }
-    glEnd();
-
-    // Dessiner les bases pour fermer les deux côtés
-    glBegin(GL_QUADS);
-    // Base inférieure (devant et derrière)
-    glVertex3f(baseVerticesFront[0][0], baseVerticesFront[0][1], baseVerticesFront[0][2]);
-    glVertex3f(baseVerticesFront[num_points - 1][0], baseVerticesFront[num_points - 1][1], baseVerticesFront[num_points - 1][2]);
-    glVertex3f(baseVerticesBack[num_points - 1][0], baseVerticesBack[num_points - 1][1], baseVerticesBack[num_points - 1][2]);
-    glVertex3f(baseVerticesBack[0][0], baseVerticesBack[0][1], baseVerticesBack[0][2]);
-
-    // Base supérieure (devant et derrière)
-    glVertex3f(topVerticesFront[0][0], topVerticesFront[0][1], topVerticesFront[0][2]);
-    glVertex3f(topVerticesFront[num_points - 1][0], topVerticesFront[num_points - 1][1], topVerticesFront[num_points - 1][2]);
-    glVertex3f(topVerticesBack[num_points - 1][0], topVerticesBack[num_points - 1][1], topVerticesBack[num_points - 1][2]);
-    glVertex3f(topVerticesBack[0][0], topVerticesBack[0][1], topVerticesBack[0][2]);
-    glEnd();
+}
+void drawFish(){
+    drawBody();
+    drawEyes();
+    drawTopFin();
+    drawBackFin();
+    drawLateralFin();
 }
 
-
-
-
-/**
- * Dessine les axes x y et z dans la scène.
- */
 void drawAxes(){
     glPushMatrix();
     // Dessin des axes
@@ -263,6 +223,7 @@ void drawAxes(){
     glEnd();
     glPopMatrix();
 }
+
 /**
  * Fonction principal, qui dessine toutes les figures.
  */
@@ -280,12 +241,8 @@ void affichage()
     // Appliquer le facteur de zoom
     glScalef(zoomFactor, zoomFactor, zoomFactor);
 
+    drawFish();
     drawAxes();
-
-    drawBody();
-    drawEyes();
-    drawTopFin();
-//drawBackFin();
 
     glFlush();
     glutSwapBuffers();
@@ -348,15 +305,26 @@ void loadJpegImage(const char *fichier, int width, int height, std::vector<unsig
     fclose(file); // Fermer le fichier
 }
 void loadTextures(){
-    loadJpegImage("../soleil.jpg",128,128,imageSoleil);
-    glGenTextures(1,&t_soleil);
-    glBindTexture(GL_TEXTURE_2D,t_soleil);
+    loadJpegImage("../ressources/textures/texSkin.jpg",1300,1300,texSkin);
+    glGenTextures(1,&t_skin);
+    glBindTexture(GL_TEXTURE_2D,t_skin);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 128, 128, 0, GL_RGB, GL_UNSIGNED_BYTE, imageSoleil.data());
+    glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1300, 1300, 0, GL_RGB, GL_UNSIGNED_BYTE, texSkin.data());
+
+    loadJpegImage("../ressources/textures/texFin2.jpeg",1536,1024,texFin);
+    glGenTextures(1,&t_fin);
+    glBindTexture(GL_TEXTURE_2D,t_fin);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1536, 1024, 0, GL_RGB, GL_UNSIGNED_BYTE, texFin.data());
+
 }
 
 //Other Functions
@@ -487,7 +455,7 @@ int main(int argc,char **argv)
     glutIdleFunc(idle);
     glutMotionFunc(mousemotion);
 
-//    loadTextures();
+    loadTextures();
 
     /* Entree dans la boucle principale glut */
     glutMainLoop();
