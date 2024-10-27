@@ -14,7 +14,7 @@ public:
     Point();  // Constructeur par défaut
     Point(float x, float y, float z);  // Constructeur paramétré
 
-    // Méthodes utilitaires pour l'affichage et les opérations
+    // Méthodes utilitaires pour l'display et les opérations
     void print() const;
 };
 

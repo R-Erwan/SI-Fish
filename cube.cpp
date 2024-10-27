@@ -46,11 +46,15 @@ PrimitiveTrunquedPyramid lateralRighttFin = PrimitiveTrunquedPyramid(0.75,0.1,0.
 
 //Couleur
 Color c_bleue = {0.29, 0.57, 0.59};
+Color c_orange = {0.91f,0.63f,0.11f};
+Color c_pink = {0.58,0.34,0.31};
+Color c_whiteBroke = {0.82,0.77,0.69};
 
 //Images and Textures
 std::vector<unsigned char> texSkin; GLuint t_skin;
 std::vector<unsigned char> texFin; GLuint t_fin;
 
+//Draws functions
 void drawBody() {
     float SCALE_X_FACTOR = 1.15;
     GLdouble planEquation[] = {-0.9, 0.0, 0.0, SCALE_X_FACTOR * 0.86}; // EQ: −0.9x+0.0y+0.0z+0.99=0 Le vecteur normal est perpendiculaire a x
@@ -58,57 +62,83 @@ void drawBody() {
     // Active le clipping
     glEnable(GL_CLIP_PLANE0);
     glClipPlane(GL_CLIP_PLANE0, planEquation);
-
         glPushMatrix();
-            // Dessine l'extérieur de la sphère (orange)
-            glEnable(GL_CULL_FACE);          // Active le culling des faces
-                glCullFace(GL_FRONT);             // Cache les faces arrières (intérieures)
-                glColor3f(0.91f, 0.63f, 0.11f);  // Couleur orange pour l'extérieur
+            // Paramètres de matériau pour un aspect réaliste (par exemple, pour un effet de peau de poisson)
+            GLfloat mat_ambient[] = {c_orange.r, c_orange.g, c_orange.b, 1.0f};   // Lumière ambiante (couleurs douces)
+            GLfloat mat_diffuse[] = {c_orange.r, c_orange.g, c_orange.b, 1.0f};   // Lumière diffuse (couleur principale)
+            GLfloat mat_specular[] = {1.0f, 1.0f, 1.0f, 1.0f};  // Lumière spéculaire (reflets)
+            GLfloat mat_shininess[] = {50.0f};                   // Brillance pour un effet lisse
 
-                    glScalef(SCALE_X_FACTOR, 1.05f, 1.0f);
+            glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
+            glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+            glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+            glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
 
-                    glEnable(GL_TEXTURE_2D);
-                    glBindTexture(GL_TEXTURE_2D, t_skin);
-                    pSphereBody.draw();
-                    glDisable(GL_TEXTURE_2D);
-
-                // Dessine l'intérieur de la sphère (noir)
-                glCullFace(GL_BACK);            // Cache les faces avant (extérieures)
-                glColor3f(0.0f, 0.0f, 0.0f);     // Couleur noire pour l'intérieur
-                pSphereBody.draw();              // Redessine la sphère
-            // Désactive les options activées
-            glDisable(GL_CULL_FACE);
+            glScalef(SCALE_X_FACTOR, 1.05f, 1.0f);
+            glEnable(GL_TEXTURE_2D);
+            glBindTexture(GL_TEXTURE_2D, t_skin);
+            pSphereBody.draw();
+            glDisable(GL_TEXTURE_2D);
         glPopMatrix();
 
     glDisable(GL_CLIP_PLANE0);
-
+}
+void drawMouth(){
     glPushMatrix();
-        glColor3f(0.0f,0.0f,0.0f);
+        // Paramètres de matériau pour un aspect réaliste (par exemple, pour un effet de peau de poisson)
+        GLfloat mat_ambient[] = {0.0f, 0.0f, 0.0f, 1.0f};   // Lumière ambiante (couleurs douces)
+        GLfloat mat_diffuse[] = {0.0f, 0.0f, 0.0f, 1.0f};   // Lumière diffuse (couleur principale)
+        GLfloat mat_specular[] = {1.0f, 1.0f, 1.0f, 1.0f};  // Lumière spéculaire (reflets)
+        GLfloat mat_shininess[] = {50.0f};                   // Brillance pour un effet lisse
+
+        glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
+        glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+        glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+        glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+
         glTranslatef(1.0,0.0,0.0);
         glRotatef(90,0.0,0.0,1.0);
         mouthHiden.draw();
     glPopMatrix();
 }
-void drawEyes(){
+void drawLeftEye(){
     float bodyRadius = pSphereBody.getRadius(); // Rayon du corps principal
     float radius = 0.4f * bodyRadius; // Rayon des yeux
     float distance = bodyRadius *0.8f; // Distance des yeux par rapport au rayon, du corps
     float pupilRadius = 0.6f * radius;
     float pupilOffset = 0.8f * radius;
-
-    //Œil gauche
     glPushMatrix();
 
         glTranslatef(distance * cos(M_PI/4), // longitude (position horizontal)
                      distance * sin(M_PI/6), // latitude (position hauteur)
                      distance * sin(M_PI/4)); // profondeur
-        glColor3f(0.82,0.77,0.69);
+        // Paramètres de matériau pour un aspect réaliste (par exemple, pour un effet de peau de poisson)
+        GLfloat mat_ambient1[] = {c_whiteBroke.r, c_whiteBroke.g, c_whiteBroke.b, 1.0f};   // Lumière ambiante (couleurs douces)
+        GLfloat mat_diffuse1[] = {c_whiteBroke.r, c_whiteBroke.g, c_whiteBroke.b, 1.0f};   // Lumière diffuse (couleur principale)
+        GLfloat mat_specular1[] = {1.0f, 1.0f, 1.0f, 1.0f};  // Lumière spéculaire (reflets)
+        GLfloat mat_shininess1[] = {50.0f};                   // Brillance pour un effet lisse
+
+        glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient1);
+        glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse1);
+        glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular1);
+        glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess1);
+
         glScalef(radius,radius,radius);
         eyeLeft.draw();
 
         //Paupière gauche
         glPushMatrix();
-            glColor3f(0.58,0.34,0.31);
+            // Paramètres de matériau pour un aspect réaliste (par exemple, pour un effet de peau de poisson)
+            GLfloat mat_ambient2[] = {c_pink.r, c_pink.g, c_pink.b, 1.0f};   // Lumière ambiante (couleurs douces)
+            GLfloat mat_diffuse2[] = {c_pink.r, c_pink.g, c_pink.b, 1.0f};   // Lumière diffuse (couleur principale)
+            GLfloat mat_specular2[] = {1.0f, 1.0f, 1.0f, 1.0f};  // Lumière spéculaire (reflets)
+            GLfloat mat_shininess2[] = {50.0f};                   // Brillance pour un effet lisse
+
+            glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient2);
+            glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse2);
+            glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular2);
+            glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess2);
+
             glTranslatef(0.4f*radius,0.4f*radius,0.4f*radius);
             glRotatef(135, 1, -1, 0);
             eyelidLeft.draw();
@@ -116,27 +146,62 @@ void drawEyes(){
 
         //Pupille gauche
         glPushMatrix();
-            glColor3f(0.1,0.1,0.1);
+            // Paramètres de matériau pour un aspect réaliste (par exemple, pour un effet de peau de poisson)
+            GLfloat mat_ambient3[] = {0.1f, 0.1f, 0.1f, 1.0f};   // Lumière ambiante (couleurs douces)
+            GLfloat mat_diffuse3[] = {0.1f, 0.1f, 0.1f, 1.0f};   // Lumière diffuse (couleur principale)
+            GLfloat mat_specular3[] = {1.0f, 1.0f, 1.0f, 1.0f};  // Lumière spéculaire (reflets)
+            GLfloat mat_shininess3[] = {50.0f};                   // Brillance pour un effet lisse
+
+            glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient3);
+            glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse3);
+            glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular3);
+            glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess3);
+
             glTranslatef(pupilOffset,pupilOffset,pupilOffset);
             glScalef(pupilRadius/radius, pupilRadius/radius, pupilRadius/radius);
-                pupilLeft.draw();
+            pupilLeft.draw();
         glPopMatrix();
 
-
     glPopMatrix();
+}
+void drawRightEye(){
+    float bodyRadius = pSphereBody.getRadius(); // Rayon du corps principal
+    float radius = 0.4f * bodyRadius; // Rayon des yeux
+    float distance = bodyRadius *0.8f; // Distance des yeux par rapport au rayon, du corps
+    float pupilRadius = 0.6f * radius;
+    float pupilOffset = 0.8f * radius;
 
-    //Œil droit
     glPushMatrix();
         glTranslatef(distance * cos(-M_PI/4), // longitude
                      distance * sin(M_PI/6), // latitude
                      distance * sin(-M_PI/4));
-        glColor3f(0.82,0.77,0.69);
+        // Paramètres de matériau pour un aspect réaliste (par exemple, pour un effet de peau de poisson)
+        GLfloat mat_ambient1[] = {c_whiteBroke.r, c_whiteBroke.g, c_whiteBroke.b, 1.0f};   // Lumière ambiante (couleurs douces)
+        GLfloat mat_diffuse1[] = {c_whiteBroke.r, c_whiteBroke.g, c_whiteBroke.b, 1.0f};   // Lumière diffuse (couleur principale)
+        GLfloat mat_specular1[] = {1.0f, 1.0f, 1.0f, 1.0f};  // Lumière spéculaire (reflets)
+        GLfloat mat_shininess1[] = {50.0f};                   // Brillance pour un effet lisse
+
+        glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient1);
+        glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse1);
+        glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular1);
+        glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess1);
+
         glScalef(radius,radius,radius);
         eyeRight.draw();
 
         //Paupière droite
         glPushMatrix();
-            glColor3f(0.58,0.34,0.31);
+            // Paramètres de matériau pour un aspect réaliste (par exemple, pour un effet de peau de poisson)
+            GLfloat mat_ambient2[] = {c_pink.r, c_pink.g, c_pink.b, 1.0f};   // Lumière ambiante (couleurs douces)
+            GLfloat mat_diffuse2[] = {c_pink.r, c_pink.g, c_pink.b, 1.0f};   // Lumière diffuse (couleur principale)
+            GLfloat mat_specular2[] = {1.0f, 1.0f, 1.0f, 1.0f};  // Lumière spéculaire (reflets)
+            GLfloat mat_shininess2[] = {50.0f};                   // Brillance pour un effet lisse
+
+            glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient2);
+            glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse2);
+            glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular2);
+            glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess2);
+
             glTranslatef(0.4f*radius,0.4f*radius,-0.4f*radius);
             glRotatef(135, -1, 1, 0);
             eyelidRight.draw();
@@ -144,16 +209,30 @@ void drawEyes(){
 
         //Pupille droite
         glPushMatrix();
-            glColor3f(0.1,0.1,0.1);
+            // Paramètres de matériau pour un aspect réaliste (par exemple, pour un effet de peau de poisson)
+            GLfloat mat_ambient3[] = {0.1f, 0.1f, 0.1f, 1.0f};   // Lumière ambiante (couleurs douces)
+            GLfloat mat_diffuse3[] = {0.1f, 0.1f, 0.1f, 1.0f};   // Lumière diffuse (couleur principale)
+            GLfloat mat_specular3[] = {1.0f, 1.0f, 1.0f, 1.0f};  // Lumière spéculaire (reflets)
+            GLfloat mat_shininess3[] = {50.0f};                   // Brillance pour un effet lisse
+
+            glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient3);
+            glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse3);
+            glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular3);
+            glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess3);
+
             glTranslatef(pupilOffset,pupilOffset,pupilOffset/2);
             glScalef(pupilRadius/radius,pupilRadius/radius,pupilRadius/radius);
             pupilRight.draw();
         glPopMatrix();
     glPopMatrix();
 }
+void drawEyes(){
+    drawRightEye();
+    drawLeftEye();
+}
+
 void drawTopFin(){
     glPushMatrix();
-        glColor3f(c_bleue.r, c_bleue.g, c_bleue.b);
         glTranslatef(0.0,pSphereBody.getRadius(),0.0);
         glRotatef(90,1.0,0.0,0.0);
             topFin.drawWithTextureOnDisque(t_fin);
@@ -161,16 +240,13 @@ void drawTopFin(){
 }
 void drawBackFin(){
     glPushMatrix();
-    glColor3f(c_bleue.r, c_bleue.g, c_bleue.b);
-    glTranslatef(-pSphereBody.getRadius()-backFin.getHeight(),0.0,0.0); // Translation pour placer la nageoire à l'arrière du poisson
-    glRotatef(-90,0.0,0.0,1.0); // Rotation pour orienter la forme.
+        glTranslatef(-pSphereBody.getRadius()-backFin.getHeight(),0.0,0.0); // Translation pour placer la nageoire à l'arrière du poisson
+        glRotatef(-90,0.0,0.0,1.0); // Rotation pour orienter la forme.
         backFin.drawWithTexOnLatFace(t_fin);
     glPopMatrix();
 }
 void drawLateralFin(){
     glPushMatrix();
-    glColor3f(c_bleue.r, c_bleue.g, c_bleue.b);
-
         //Right Fin
         glPushMatrix();
             glTranslatef(0.0,0.0,pSphereBody.getRadius() + lateralLeftFin.getHeight()*0.8f);
@@ -190,12 +266,31 @@ void drawLateralFin(){
     glPopMatrix();
 
 }
+void drawFins(){
+    glPushMatrix();
+        // Paramètres de matériau pour un aspect réaliste (par exemple, pour un effet de peau de poisson)
+        GLfloat mat_ambient[] = {c_bleue.r, c_bleue.g, c_bleue.b, 1.0f};   // Lumière ambiante (couleurs douces)
+        GLfloat mat_diffuse[] = {c_bleue.r, c_bleue.g, c_bleue.b, 1.0f};   // Lumière diffuse (couleur principale)
+        GLfloat mat_specular[] = {1.0f, 1.0f, 1.0f, 1.0f};  // Lumière spéculaire (reflets)
+        GLfloat mat_shininess[] = {50.0f};                   // Brillance pour un effet lisse
+
+        glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
+        glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+        glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+        glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+
+        drawTopFin();
+        drawBackFin();
+        drawLateralFin();
+
+    glPopMatrix();
+}
+
 void drawFish(){
     drawBody();
+    drawMouth();
     drawEyes();
-    drawTopFin();
-    drawBackFin();
-    drawLateralFin();
+    drawFins();
 }
 
 void drawAxes(){
@@ -224,38 +319,7 @@ void drawAxes(){
     glPopMatrix();
 }
 
-/**
- * Fonction principal, qui dessine toutes les figures.
- */
-void affichage()
-{
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glShadeModel(GL_SMOOTH);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-
-    //Déplacement souris.
-    glRotatef(angley, 1.0, 0.0, 0.0);
-    glRotatef(anglex, 0.0, 1.0, 0.0);
-
-    // Appliquer le facteur de zoom
-    glScalef(zoomFactor, zoomFactor, zoomFactor);
-
-    drawFish();
-    drawAxes();
-
-    glFlush();
-    glutSwapBuffers();
-}
-
 //Textures Loaders
-/**
- * Charge une image dans un tableau
- * @param fichier fichier ou chercher l'image
- * @param width largeur de l'image
- * @param height hauteur de l'image
- * @param image tableau ou stocké l'image
- */
 void loadJpegImage(const char *fichier, int width, int height, std::vector<unsigned char>& image) {
     struct jpeg_decompress_struct cinfo;
     struct jpeg_error_mgr jerr;
@@ -327,18 +391,55 @@ void loadTextures(){
 
 }
 
+//Light
+void initLight(){
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    GLfloat diffuse[] = {1.0,1.0,1.0,1.0};
+    GLfloat specular[] = {1.0,1.0,1.0,1.0};
+    GLfloat position[] = {3.0,3.0,3.0,1.0};
+    glLightfv(GL_LIGHT0,GL_DIFFUSE,diffuse);
+    glLightfv(GL_LIGHT0,GL_POSITION,position);
+    glLightfv(GL_LIGHT0,GL_SPECULAR,specular);
+
+}
+
+void display()
+{
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glShadeModel(GL_SMOOTH);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    // Config lifgt
+    initLight();
+
+    //Déplacement souris.
+    glRotatef(angley, 1.0, 0.0, 0.0);
+    glRotatef(anglex, 0.0, 1.0, 0.0);
+
+    // Appliquer le facteur de zoom
+    glScalef(zoomFactor, zoomFactor, zoomFactor);
+
+    drawAxes();
+    drawFish();
+
+    glFlush();
+    glutSwapBuffers();
+}
+
+
 //Other Functions
-void clavier(unsigned char touche,int x,int y)
+void keyboard(unsigned char touche,int x,int y)
 {
     switch (touche)
     {
-        case 'p': /* affichage du carre plein */
+        case 'p': /* display du carre plein */
         {
             glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
             glutPostRedisplay();
             break;
         }
-        case 'f': /* affichage en mode fil de fer */
+        case 'f': /* display en mode fil de fer */
         {
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             glutPostRedisplay();
@@ -374,6 +475,23 @@ void clavier(unsigned char touche,int x,int y)
             exit(0);
         }
     }
+}
+void keyboardSpec(int key, int x, int y){
+    switch (key) {
+        case GLUT_KEY_LEFT:
+            anglex -= 5.0f; // Tourner à gauche
+            break;
+        case GLUT_KEY_RIGHT:
+            anglex += 5.0f; // Tourner à droite
+            break;
+        case GLUT_KEY_UP:
+            angley += 5.0f; // Monter
+            break;
+        case GLUT_KEY_DOWN:
+            angley -= 5.0f; // Descendre
+            break;
+    }
+    glutPostRedisplay();
 }
 void reshape(int x,int y)
 {
@@ -420,7 +538,7 @@ void mousemotion(int x,int y)
        position sauvegardee */
         anglex=anglex+(x-xold);
         angley=angley+(y-yold);
-        glutPostRedisplay(); /* on demande un rafraichissement de l'affichage */
+        glutPostRedisplay(); /* on demande un rafraichissement de l'display */
     }
 
     xold=x; /* sauvegarde des valeurs courante de le position de la souris */
@@ -442,14 +560,15 @@ int main(int argc,char **argv)
     glutCreateWindow("Synthese d'Image");
 
     /* Initialisation d'OpenGL */
-    glClearColor(0.9,0.9,0.9,1.0);
-    glColor3f(1.0,1.0,1.0);
-    glPointSize(6.0);
+    glClearColor(0.1,0.1,0.1,1.0);
+
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_NORMALIZE);
 
     /* enregistrement des fonctions de rappel */
-    glutDisplayFunc(affichage);
-    glutKeyboardFunc(clavier);
+    glutDisplayFunc(display);
+    glutKeyboardFunc(keyboard);
+    glutSpecialFunc(keyboardSpec);
     glutReshapeFunc(reshape);
     glutMouseFunc(mouse);
     glutIdleFunc(idle);

@@ -16,6 +16,7 @@ private:
 
     std::vector<Point> vertices;  // Liste des sommets de la sphère
     std::vector<GLint> indices;   // Indices pour dessiner les faces
+    std::vector<Point> normals;
 
     void calcSphere();  // Méthode privée pour calculer les sommets et indices
 

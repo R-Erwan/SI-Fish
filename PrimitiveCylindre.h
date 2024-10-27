@@ -18,6 +18,7 @@ private:
     std::vector<Point> vertices; // step * 2
     std::vector<GLint> indices; // step * 2
     std::vector<GLint> indiceslat; // step * 4
+    std::vector<Point> normals;
 
     void calcCylyndre();
 

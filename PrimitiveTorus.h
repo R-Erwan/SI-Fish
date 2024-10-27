@@ -23,6 +23,7 @@ class PrimitiveTorus {
         int parallels;      // Nombre de segments du tube
         std::vector<Point> vertices;
         std::vector<int> indices;
+        std::vector<Point> normals;
 };
 
 
