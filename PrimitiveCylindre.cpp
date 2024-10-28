@@ -2,10 +2,10 @@
 #include <cmath>
 
 PrimitiveCylindre::PrimitiveCylindre(float r, int p, float h) : radius(r), step(p), height(h) {
-    calcCylyndre();
+    calcCylindre();
 }
 
-void PrimitiveCylindre::calcCylyndre() {
+void PrimitiveCylindre::calcCylindre() {
     vertices.clear();
     indices.clear();
     normals.clear();
@@ -99,7 +99,7 @@ void PrimitiveCylindre::drawWithTextureOnDisque(GLuint textureId) {
         // Calcul de la coordonnée de texture (u, v) en fonction de l'angle
         float u = 0.5f + 0.5f * cos((i * 2 * M_PI) / step); // u varie entre 0 et 1
         float v = 0.5f + 0.5f * sin((i * 2 * M_PI) / step); // v varie entre 0 et 1
-
+        glNormal3f(normals[i].x,normals[i].y,normals[i].z);
         glTexCoord2f(u, v);
         glVertex3f(p.x, p.y, p.z);
     }
@@ -113,7 +113,7 @@ void PrimitiveCylindre::drawWithTextureOnDisque(GLuint textureId) {
         // Même calcul pour le disque inférieur
         float u = 0.5f + 0.5f * cos((i * 2 * M_PI) / step);
         float v = 0.5f + 0.5f * sin((i * 2 * M_PI) / step);
-
+        glNormal3f(normals[i + step].x,normals[i + step].y,normals[i + step].z);
         glTexCoord2f(u, v);
         glVertex3f(p.x, p.y, p.z);
     }
@@ -125,13 +125,11 @@ void PrimitiveCylindre::drawWithTextureOnDisque(GLuint textureId) {
     glBegin(GL_QUADS);
     for (int i : indiceslat) {
         Point p = vertices[i];
+        glNormal3f(normals[i / 4 + step * 2].x, normals[i / 4 + step * 2].y, normals[i / 4 + step * 2].z);  // Normale
         glVertex3f(p.x, p.y, p.z);
     }
     glEnd();
 }
-
-//TODO function drawWithTexturePerFace
-//TODO function drawWithTextureRound
 
 float PrimitiveCylindre::getRadius() {
     return radius;

@@ -20,7 +20,7 @@ private:
     std::vector<GLint> indiceslat; // step * 4
     std::vector<Point> normals;
 
-    void calcCylyndre();
+    void calcCylindre();
 
 public:
     PrimitiveCylindre(float r, int p, float h);
